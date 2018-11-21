@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+
+    <!--导入redis的属性配置文件-->
+    <context:property-placeholder location="classpath:redis.properties" />
+
+    <!--定义redis连接池的bean-->
+    <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig" />
+
+    <!--这个是定义redis最核心的配置,相当是redis的客户端，然后用的是客户端的连接池-->
+    <!--scpoe相当是定义的单例-->
+    <bean id="shardedJedisPool" class="redis.clients.jedis.ShardedJedisPool" scope="singleton" >
+        <!--这个类的定义不能光定义，还需要写一些指定的参数,让他连接上redis-->
+        <constructor-arg index="0" ref="jedisPoolConfig" />
+        <!--这个配置要传入bean-->
+        <constructor-arg index="1">
+            <list>
+                <bean class="redis.clients.jedis.JedisShardInfo">
+                    <!--IP地址,这些属性可以从redis的属性配置文件读取-->
+                    <constructor-arg name="host" value="${redis.host}"/>
+                    <!--端口-->
+                    <constructor-arg name="port" value="${redis.port}"/>
+                    <!--连接超时时间-->
+                    <constructor-arg name="timeout" value="${redis.timeout}"/>
+                </bean>
+            </list>
+        </constructor-arg>
+    </bean>
+
+</beans>
